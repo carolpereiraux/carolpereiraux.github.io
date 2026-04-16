@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meu Look">
+<meta name="theme-color" content="#FAF9F7">
+<meta name="description" content="Monte combinações de roupas durante sua viagem. Visualize, favorita e organize seus looks.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23C4A882' width='192' height='192'/><text x='50%' y='50%' font-size='90' font-family='serif' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>M</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23C4A882' width='180' height='180' rx='40'/><text x='50%' y='50%' font-size='80' font-family='serif' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>M</text></svg>">
+<title>Meu Look</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #FAF9F7;
+  --card: #FFFFFF;
+  --border: #E8E6E1;
+  --text: #2C2C2C;
+  --text-light: #8A8680;
+  --accent: #C4A882;
+  --accent-light: #F0E9DF;
+  --danger: #D4836A;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --radius: 14px;
+  --nav-h: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ── PAGES ── */
+.page { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.page.active { display: flex; }
+
+/* ── HEADER ── */
+.page-header { text-align: center; padding: 14px 20px 10px; flex-shrink: 0; }
+.page-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500; font-size: 22px;
+  letter-spacing: 0.5px; color: var(--text);
+}
+
+/* ── LOOK HEADER ── */
+.look-topbar { display: flex; align-items: center; padding: 12px 20px 4px; flex-shrink: 0; }
+.look-logo {
+  font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 15px;
+  color: var(--text); background: var(--accent-light);
+  padding: 5px 12px; border-radius: 8px; letter-spacing: 0.3px;
+}
+.look-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 22px;
+  text-align: center; color: var(--text); padding: 6px 0 4px; flex-shrink: 0;
+}
+
+/* ── LOOK BUILDER ── */
+.look-builder { flex: 1; display: flex; flex-direction: column; padding: 4px 20px 8px; overflow: hidden; }
+.look-card {
+  flex: 1; background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; overflow: hidden; position: relative; padding: 32px;
+}
+.look-card-heart {
+  position: absolute; top: 12px; right: 12px; z-index: 10;
+  background: white; border: none; width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.25s;
+}
+.look-card-heart.is-fav { background: var(--accent-light); color: var(--accent); }
+
+.look-inner { display: flex; flex-direction: column; flex: 1; gap: 16px; justify-content: center; min-height: 0; }
+
+.slot { display: flex; flex-direction: column; align-items: center; flex: 1; min-height: 0; position: relative; }
+.overlay-btn {
+  position: absolute; bottom: -10px; right: calc(50% - 80px - 6px); z-index: 15;
+  width: 26px; height: 26px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,0.45); color: white; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; line-height: 1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.overlay-btn:active { background: rgba(0,0,0,0.6); }
+
+.slot-carousel {
+  display: flex; align-items: center; gap: 6px; flex: 1; width: 100%;
+  justify-content: center; min-height: 0; padding: 4px 8px;
+}
+.slot-carousel .arrow {
+  background: none; border: none; font-size: 20px; color: var(--text-light);
+  cursor: pointer; padding: 6px; flex-shrink: 0; transition: color 0.2s;
+}
+.slot-carousel .arrow:active { color: var(--accent); }
+.slot-card {
+  flex: 1; max-width: 160px; max-height: 100%; border-radius: 16px;
+  overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;
+}
+.slot-card.empty {
+  border: 1.5px dashed var(--border); color: var(--text-light);
+  font-size: 12px; cursor: pointer; min-height: 80px; border-radius: 16px;
+}
+.slot-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+
+/* ── SHUFFLE ── */
+.shuffle-row { display: flex; justify-content: center; padding: 10px 0 4px; flex-shrink: 0; }
+.btn-shuffle {
+  display: flex; align-items: center; gap: 8px; padding: 10px 24px;
+  border: none; border-radius: 50px; background: var(--text); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  cursor: pointer; transition: all 0.25s; box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+.btn-shuffle svg { stroke: white; flex-shrink: 0; }
+.btn-shuffle:active { transform: scale(0.95); opacity: 0.85; }
+.btn-shuffle.shuffling { animation: shake 0.4s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px) rotate(-2deg); }
+  40% { transform: translateX(4px) rotate(2deg); }
+  60% { transform: translateX(-3px) rotate(-1deg); }
+  80% { transform: translateX(3px) rotate(1deg); }
+}
+
+.fab {
+  position: fixed; bottom: calc(var(--nav-h) + var(--safe-bottom) + 14px); right: 20px;
+  width: 50px; height: 50px; border-radius: 50%; background: var(--text); color: white;
+  border: none; font-size: 26px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18); cursor: pointer; z-index: 50; transition: transform 0.2s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ── PIECES PAGE ── */
+.pieces-content { flex: 1; overflow-y: auto; padding: 0 0 16px; -webkit-overflow-scrolling: touch; }
+.cat-section { margin-bottom: 20px; }
+.cat-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; margin-bottom: 10px; cursor: pointer;
+}
+.cat-title-row .cat-name {
+  font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--text);
+}
+.cat-title-row .cat-count { font-size: 12px; color: var(--text-light); }
+
+.pieces-hscroll {
+  display: flex; gap: 10px; overflow-x: auto; padding: 0 20px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.pieces-hscroll::-webkit-scrollbar { display: none; }
+.piece-hcard { flex-shrink: 0; width: 100px; cursor: pointer; }
+.piece-hcard-img {
+  width: 100px; height: 130px; border-radius: 10px; overflow: hidden;
+  background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.piece-hcard-img img { width: 100%; height: 100%; object-fit: cover; }
+.piece-hcard-name {
+  font-size: 11px; color: var(--text-light); text-align: center;
+  margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── CATEGORY DRILL-DOWN ── */
+.cat-drilldown {
+  position: fixed; inset: 0; background: var(--bg); z-index: 200;
+  display: none; flex-direction: column;
+  padding-top: var(--safe-top); padding-bottom: var(--safe-bottom);
+}
+.cat-drilldown.show { display: flex; }
+.cat-dd-header {
+  display: flex; align-items: center; gap: 12px; padding: 14px 20px 10px; flex-shrink: 0;
+}
+.cat-dd-back {
+  background: none; border: none; font-size: 22px; color: var(--text); cursor: pointer; padding: 4px;
+}
+.cat-dd-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; }
+.cat-dd-grid {
+  flex: 1; overflow-y: auto; padding: 0 20px 20px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  align-content: start; -webkit-overflow-scrolling: touch;
+}
+.cat-dd-item {
+  aspect-ratio: 3/4; border-radius: 10px; overflow: hidden; position: relative;
+  background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); cursor: pointer;
+}
+.cat-dd-item img { width: 100%; height: 100%; object-fit: cover; }
+.cat-dd-item .dd-label {
+  position: absolute; bottom: 0; left: 0; right: 0; padding: 3px 6px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.55));
+  color: white; font-size: 10px; text-align: center;
+}
+.cat-dd-item .dd-overlay-badge {
+  position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.5);
+  color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px;
+}
+
+/* ── PIECE MODAL ── */
+.piece-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 150; display: none; align-items: center; justify-content: center; padding: 20px; }
+.piece-modal.show { display: flex; }
+.piece-modal-content {
+  background: var(--card); border-radius: 16px; width: 100%; max-width: 360px;
+  max-height: 90vh; overflow-y: auto; padding: 24px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+.piece-modal-close {
+  position: absolute; top: 12px; right: 12px; background: none; border: none;
+  font-size: 22px; cursor: pointer; width: 32px; height: 32px; display: flex;
+  align-items: center; justify-content: center;
+}
+.piece-modal-img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; margin-bottom: 20px;
+}
+.piece-modal-field { margin-bottom: 16px; }
+.piece-modal-field label {
+  display: block; font-size: 12px; font-weight: 500; color: var(--text-light);
+  margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.piece-modal-field input {
+  width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+}
+.piece-modal-pills {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.piece-modal-pill {
+  flex: 1; min-width: 80px; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; background: white; color: var(--text);
+  font-size: 12px; font-weight: 500; text-align: center; cursor: pointer;
+  transition: all 0.2s;
+}
+.piece-modal-pill.selected {
+  background: var(--text); color: white; border-color: var(--text);
+}
+.piece-modal-pill:active { opacity: 0.7; }
+.piece-modal-checkbox {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+}
+.piece-modal-checkbox input { cursor: pointer; }
+.piece-modal-checkbox label { margin: 0; cursor: pointer; }
+.piece-modal-buttons { display: flex; gap: 10px; margin-top: 24px; }
+.piece-modal-btn {
+  flex: 1; padding: 12px; border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.piece-modal-btn.save {
+  background: var(--text); color: white;
+}
+.piece-modal-btn.delete {
+  background: var(--danger); color: white;
+}
+
+/* ── FAVS PAGE ── */
+.favs-content { flex: 1; overflow-y: auto; padding: 0 20px 16px; -webkit-overflow-scrolling: touch; }
+
+.favs-filter-bar {
+  padding: 12px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.favs-filter-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 8px 0; background: none; border: none; width: 100%;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+}
+.favs-filter-toggle.active { color: var(--accent); font-weight: 500; }
+.favs-filter-toggle-icon { transition: transform 0.3s; }
+.favs-filter-toggle.active .favs-filter-toggle-icon { transform: rotate(180deg); }
+
+#clearFiltersBtn { display: none; background: none; border: none; color: var(--danger); font-size: 12px; cursor: pointer; padding: 6px 12px; }
+
+#favFilterPanel {
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+  background: var(--accent-light); border-radius: 8px; margin-top: 8px; padding: 0;
+}
+#favFilterPanel.show { max-height: 300px; padding: 12px; }
+#favSearch { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: 'DM Sans', sans-serif; margin-bottom: 10px; }
+#favFilterList { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-chip {
+  padding: 6px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px;
+  background: white; color: var(--text); font-size: 12px; cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-chip.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+.empty-state { text-align: center; color: var(--text-light); padding: 40px 20px; }
+
+.fav-stack {
+  position: relative; width: 120px; height: 160px;
+  cursor: pointer; margin-bottom: 16px; flex-shrink: 0;
+}
+.stack-visual {
+  position: relative; width: 100%; height: 100%;
+}
+.stack-img {
+  position: absolute; width: 100%; height: 100%;
+  border-radius: 10px; border: 1px solid var(--border);
+  box-shadow: var(--shadow); object-fit: cover;
+}
+.stack-img:nth-child(1) { transform: rotate(3deg) translateY(6px); z-index: 0; }
+.stack-img:nth-child(2) { transform: rotate(-3deg) translateX(6px); z-index: 1; }
+.stack-img:nth-child(3) { transform: rotate(1deg) translateY(-6px); z-index: 2; }
+.stack-label {
+  font-size: 10px; color: var(--text-light); text-align: center;
+  margin-top: 8px; line-height: 1.2;
+}
+
+.fav-expanded-wrapper {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 140;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.fav-expanded {
+  background: var(--card); border-radius: 16px; width: 100%; max-width: 360px;
+  padding: 24px; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  max-height: 90vh; overflow-y: auto;
+}
+.fav-close-btn {
+  position: absolute; top: 12px; right: 12px; background: none; border: none;
+  font-size: 22px; cursor: pointer; width: 32px; height: 32px; display: flex;
+  align-items: center; justify-content: center;
+}
+.fav-pieces-row {
+  display: flex; gap: 12px; margin-bottom: 20px; overflow-x: auto;
+}
+.fav-piece {
+  flex-shrink: 0; text-align: center;
+}
+.fav-piece img {
+  width: 80px; height: 100px; object-fit: cover; border-radius: 8px;
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.fp-name {
+  font-size: 10px; color: var(--text-light); text-align: center;
+  margin-top: 4px; line-height: 1.2;
+}
+.fav-notes { margin: 20px 0; }
+.fav-notes textarea {
+  width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+  color: var(--text); resize: none;
+}
+.fav-note-save {
+  width: 100%; padding: 12px; background: var(--text); color: white;
+  border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; cursor: pointer; margin-bottom: 8px;
+}
+.fav-remove {
+  width: 100%; padding: 10px; background: var(--danger); color: white;
+  border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: flex; justify-content: space-around; align-items: center;
+  height: var(--nav-h); border-top: 1px solid var(--border);
+  background: var(--card); flex-shrink: 0;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4px; background: none; border: none;
+  cursor: pointer; color: var(--text-light); transition: color 0.2s;
+  font-size: 11px; padding: 8px;
+}
+.nav-btn.active {
+  color: var(--text);
+}
+.nav-btn svg { width: 24px; height: 24px; }
+
+/* ── MODAL ── */
+#modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100;
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end;
+  padding-bottom: 0; visibility: hidden; opacity: 0; transition: opacity 0.3s;
+}
+#modal.show { visibility: visible; opacity: 1; }
+.modal-sheet {
+  background: var(--card); width: 100%; border-radius: 16px 16px 0 0;
+  padding: 24px 20px; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-title {
+  font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500;
+  margin-bottom: 16px; color: var(--text);
+}
+
+.modal-photo-area {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.modal-photo-btn {
+  flex: 1; padding: 12px; background: var(--text); color: white;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.modal-photo-btn-full {
+  flex: 1 !important; width: 100%;
+}
+.modal-photo-btn:active { opacity: 0.8; }
+#photoPreviewArea {
+  display: none; margin-bottom: 16px;
+}
+#photoPreview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+.modal-change-btn {
+  width: 100%; padding: 8px; background: var(--accent-light); color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; font-size: 12px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block; font-size: 12px; font-weight: 500; color: var(--text-light);
+  margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.form-group input {
+  width: 100%; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  color: var(--text);
+}
+
+.cat-pills {
+  display: flex; gap: 8px;
+}
+.cat-pill {
+  flex: 1; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; background: white; color: var(--text);
+  font-size: 12px; font-weight: 500; text-align: center; cursor: pointer;
+  transition: all 0.2s;
+}
+.cat-pill.selected {
+  background: var(--text); color: white; border-color: var(--text);
+}
+
+#overlayCheckRow {
+  display: none; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+#overlayCheckRow.visible { display: flex !important; }
+#overlayCheckRow {
+  align-items: center; gap: 10px;
+}
+#overlayCheck { cursor: pointer; }
+#overlayCheckRow label { margin: 0; cursor: pointer; font-size: 13px; }
+
+.modal-save-btn {
+  width: 100%; padding: 12px; background: var(--text); color: white;
+  border: none; border-radius: 8px; font-weight: 500; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- PAGE: CRIAR LOOK -->
+  <div class="page active" id="page-look">
+    <div class="look-topbar">
+      <div class="look-logo">Meu Look</div>
+    </div>
+    <div class="look-title">Crie seu look</div>
+    <div class="look-builder">
+      <div class="look-card" id="lookCard">
+        <button class="look-card-heart" id="favBtn" onclick="toggleFavLook()">♡</button>
+        <div class="look-inner" id="lookInner"></div>
+      </div>
+    </div>
+    <div class="shuffle-row">
+      <button class="btn-shuffle" onclick="shuffleLook()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 5v4H17M3 19v-4h4M19.02 15a7 7 0 0 0-13.86-2.06M4.98 9a7 7 0 0 1 13.86 2.06"/>
+        </svg>
+        Escolha pra mim
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE: PEÇAS -->
+  <div class="page" id="page-pieces">
+    <div class="page-header"><h1>Peças</h1></div>
+    <div class="pieces-content" id="piecesContent"></div>
+  </div>
+
+  <!-- PAGE: FAVORITOS -->
+  <div class="page" id="page-favs">
+    <div class="page-header"><h1>Favoritos</h1></div>
+    <div class="favs-filter-bar">
+      <button class="favs-filter-toggle" id="filterToggle" onclick="toggleFavFilter()">
+        <span id="filterLabel">Filtrar por peça</span>
+        <span class="favs-filter-toggle-icon">›</span>
+      </button>
+      <button id="clearFiltersBtn" onclick="clearFavFilters()">Limpar</button>
+      <div id="favFilterPanel">
+        <input type="text" id="favSearch" placeholder="Buscar..." oninput="renderFilterList()">
+        <div id="favFilterList"></div>
+      </div>
+    </div>
+    <div class="favs-content" id="favsContent"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="switchPage('look')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 8L5 10v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8l-2-2M7 8h10M7 8l3-3h4l3 3"/></svg>
+      Criar
+    </button>
+    <button class="nav-btn" onclick="switchPage('pieces')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M9 9v6M15 9v6"/></svg>
+      Peças
+    </button>
+    <button class="nav-btn" onclick="switchPage('favs')">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Favoritos
+    </button>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openModal()">+</button>
+
+  <!-- CAT DRILLDOWN -->
+  <div class="cat-drilldown" id="catDrilldown">
+    <div class="cat-dd-header">
+      <button class="cat-dd-back" onclick="document.getElementById('catDrilldown').classList.remove('show')">‹</button>
+      <h2 class="cat-dd-title" id="ddTitle"></h2>
+    </div>
+    <div class="cat-dd-grid" id="ddGrid"></div>
+  </div>
+
+  <!-- PIECE MODAL -->
+  <div class="piece-modal" id="pieceModal">
+    <div class="piece-modal-content">
+      <button class="piece-modal-close" onclick="document.getElementById('pieceModal').classList.remove('show')">✕</button>
+      <img id="pieceModalImg" class="piece-modal-img" src="">
+      <div class="piece-modal-field">
+        <label>Descrição</label>
+        <input type="text" id="pieceModalDesc" placeholder="Ex: cropped branco">
+      </div>
+      <div class="piece-modal-field">
+        <label>Categoria</label>
+        <div class="piece-modal-pills">
+          <button class="piece-modal-pill" data-cat="top" onclick="selectModalCat(this)">Parte de cima</button>
+          <button class="piece-modal-pill" data-cat="bottom" onclick="selectModalCat(this)">Parte de baixo</button>
+          <button class="piece-modal-pill" data-cat="shoes" onclick="selectModalCat(this)">Calçado</button>
+        </div>
+      </div>
+      <div class="piece-modal-checkbox" id="pieceModalOverlay" style="display: none;">
+        <input type="checkbox" id="pieceModalOverlayCheck">
+        <label for="pieceModalOverlayCheck">Peça de sobreposição (jaqueta, cardigan...)</label>
+      </div>
+      <div class="piece-modal-buttons">
+        <button class="piece-modal-btn save" onclick="savePieceEdit()">Salvar</button>
+        <button class="piece-modal-btn delete" onclick="deletePieceFromModal()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD MODAL -->
+  <div id="modal" onclick="closeModalOutside(event)">
+    <div class="modal-sheet">
+      <div class="modal-title">Adicionar peça</div>
+      
+      <div id="photoOptions" class="modal-photo-area">
+        <button class="modal-photo-btn modal-photo-btn-full" onclick="document.getElementById('filePhoto').click()">📸 Selecionar ou tirar foto</button>
+      </div>
+      <input type="file" id="filePhoto" accept="image/*" style="display: none;" onchange="handlePhoto(this)">
+
+      <div id="photoPreviewArea">
+        <img id="photoPreview" src="">
+        <button class="modal-change-btn" onclick="clearPhoto()">Trocar foto</button>
+      </div>
+
+      <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" id="inputDesc" placeholder="Ex: cropped branco">
+      </div>
+
+      <div class="form-group">
+        <label>Categoria</label>
+        <div class="cat-pills">
+          <button class="cat-pill" data-cat="top" onclick="pickCat(this)">Parte de cima</button>
+          <button class="cat-pill" data-cat="bottom" onclick="pickCat(this)">Parte de baixo</button>
+          <button class="cat-pill" data-cat="shoes" onclick="pickCat(this)">Calçado</button>
+        </div>
+      </div>
+
+      <div id="overlayCheckRow">
+        <input type="checkbox" id="overlayCheck">
+        <label for="overlayCheck">Peça de sobreposição (jaqueta, cardigan...)</label>
+      </div>
+
+      <button class="modal-save-btn" onclick="savePiece()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+let pieces = JSON.parse(localStorage.getItem('ml_pieces') || '[]');
+let favs = JSON.parse(localStorage.getItem('ml_favs') || '[]');
+let currentLook = { top: null, overlay: null, bottom: null, shoes: null };
+let tempPhoto = null, tempCat = null, editingId = null;
+let favFilterIds = new Set();
+let expandedFav = null;
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const map = { look: 'page-look', pieces: 'page-pieces', favs: 'page-favs' };
+  document.getElementById(map[name]).classList.add('active');
+  event.target.closest('.nav-btn').classList.add('active');
+  if (name === 'pieces') renderPieces();
+  if (name === 'favs') renderFavs();
+}
+
+function byCategory(cat) { return pieces.filter(p => p.cat === cat); }
+function topRegular() { return byCategory('top').filter(p => !p.isOverlay); }
+function topOverlays() { return byCategory('top').filter(p => p.isOverlay); }
+
+function getSlotItems(key) {
+  if (key === 'top') {
+    const regular = topRegular();
+    return regular.length > 0 ? regular : byCategory('top');
+  }
+  if (key === 'overlay') return topOverlays();
+  if (key === 'bottom') return byCategory('bottom');
+  if (key === 'shoes') return byCategory('shoes');
+  return [];
+}
+
+function renderLook() {
+  const inner = document.getElementById('lookInner');
+  const slots = [];
+  if (currentLook.overlay) slots.push(buildSlot('overlay', pieces.find(p => p.id === currentLook.overlay), false, false, true));
+  slots.push(buildSlot('top', pieces.find(p => p.id === currentLook.top), getSlotItems('top').length > 1, currentLook.top, false));
+  slots.push(buildSlot('bottom', pieces.find(p => p.id === currentLook.bottom), getSlotItems('bottom').length > 1, false, false));
+  slots.push(buildSlot('shoes', pieces.find(p => p.id === currentLook.shoes), getSlotItems('shoes').length > 1, false, false));
+  inner.innerHTML = slots.join('');
+  updateFavBtn();
+  attachSlotListeners();
+}
+
+function buildSlot(key, item, showArrows, showPlus, showClose) {
+  const items = getSlotItems(key);
+  const idx = item ? items.indexOf(item) : -1;
+  const isTop = key === 'top';
+  const isOverlay = key === 'overlay';
+  let html = `<div class="slot">`;
+  
+  if (isTop && currentLook.top && !currentLook.overlay) {
+    html += `<button class="overlay-btn" onclick="toggleOverlay()">+</button>`;
+  }
+  if (isOverlay && currentLook.overlay) {
+    html += `<button class="overlay-btn" onclick="toggleOverlay()">✕</button>`;
+  }
+
+  if (items.length > 1 && showArrows) {
+    html += `<div class="slot-carousel">
+      <button class="arrow" onclick="nav('${key}', -1)">‹</button>
+      <div class="slot-card">${item ? `<img src="${item.photo}">` : '<span>+ adicionar</span>'}</div>
+      <button class="arrow" onclick="nav('${key}', 1)">›</button>
+    </div>`;
+  } else {
+    html += `<div class="slot-card ${!item ? 'empty' : ''}" onclick="${!item ? `nav('${key}', 1)` : ''}">${item ? `<img src="${item.photo}">` : '+ adicionar'}</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function attachSlotListeners() {
+  document.querySelectorAll('.slot-card.empty').forEach(el => el.onclick = () => openModal());
+}
+
+function toggleOverlay() {
+  currentLook.overlay = currentLook.overlay ? null : (topOverlays()[0]?.id || null);
+  renderLook();
+}
+
+function nav(cat, dir) {
+  const items = getSlotItems(cat);
+  const current = currentLook[cat];
+  const idx = current ? items.findIndex(p => p.id === current) : -1;
+  const next = items[(idx + dir + items.length) % items.length];
+  currentLook[cat] = next?.id || null;
+  renderLook();
+}
+
+function shuffleLook() {
+  const btn = event.target.closest('.btn-shuffle');
+  btn.classList.add('shuffling');
+  setTimeout(() => btn.classList.remove('shuffling'), 400);
+  
+  const topItems = currentLook.overlay ? topRegular() : (topRegular().length > 0 ? topRegular() : byCategory('top'));
+  const overlayItems = topOverlays();
+  const bottomItems = byCategory('bottom');
+  const shoesItems = byCategory('shoes');
+  
+  if (topItems.length && bottomItems.length && shoesItems.length) {
+    currentLook.top = topItems[Math.floor(Math.random() * topItems.length)].id;
+    if (currentLook.overlay && overlayItems.length) currentLook.overlay = overlayItems[Math.floor(Math.random() * overlayItems.length)].id;
+    currentLook.bottom = bottomItems[Math.floor(Math.random() * bottomItems.length)].id;
+    currentLook.shoes = shoesItems[Math.floor(Math.random() * shoesItems.length)].id;
+    renderLook();
+  }
+}
+
+function getCurrentLookIds() {
+  return [currentLook.top, currentLook.overlay, currentLook.bottom, currentLook.shoes].filter(Boolean);
+}
+
+function toggleFavLook() {
+  const ids = getCurrentLookIds();
+  if (ids.length < 3) return;
+  const key = ids.join('|');
+  const idx = favs.findIndex(f => f.key === key);
+  if (idx >= 0) favs.splice(idx, 1);
+  else favs.push({ key, top: currentLook.top, overlay: currentLook.overlay, bottom: currentLook.bottom, shoes: currentLook.shoes, notes: '' });
+  localStorage.setItem('ml_favs', JSON.stringify(favs));
+  updateFavBtn();
+}
+
+function updateFavBtn() {
+  const btn = document.getElementById('favBtn');
+  const key = getCurrentLookIds().join('|');
+  const isFav = favs.some(f => f.key === key);
+  btn.textContent = isFav ? '♥' : '♡';
+  btn.classList.toggle('is-fav', isFav);
+}
+
+function renderPieces() {
+  const cont = document.getElementById('piecesContent');
+  cont.innerHTML = ['top', 'bottom', 'shoes'].map(cat => {
+    const label = { top: 'Partes de cima', bottom: 'Partes de baixo', shoes: 'Calçados' }[cat];
+    const list = byCategory(cat);
+    return `<div class="cat-section">
+      <div class="cat-title-row" onclick="openDrilldown('${cat}', '${label}')">
+        <span class="cat-name">${label} <span class="cat-count">${list.length}</span></span>
+        <span>›</span>
+      </div>
+      <div class="pieces-hscroll">
+        ${list.map(p => `<div class="piece-hcard" onclick="openPieceModal('${p.id}')">
+          <div class="piece-hcard-img"><img src="${p.photo}"></div>
+          <div class="piece-hcard-name">${p.desc}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDrilldown(cat, label) {
+  const list = byCategory(cat);
+  const grid = document.getElementById('ddGrid');
+  grid.innerHTML = list.map(p => `<div class="cat-dd-item" onclick="openPieceModal('${p.id}')">
+    <img src="${p.photo}">
+    <div class="dd-label">${p.desc}</div>
+    ${p.isOverlay ? '<div class="dd-overlay-badge">sobreposição</div>' : ''}
+  </div>`).join('');
+  document.getElementById('ddTitle').textContent = label;
+  document.getElementById('catDrilldown').classList.add('show');
+}
+
+function openPieceModal(id) {
+  editingId = id;
+  const p = pieces.find(x => x.id === id);
+  document.getElementById('pieceModalImg').src = p.photo;
+  document.getElementById('pieceModalDesc').value = p.desc;
+  document.querySelectorAll('.piece-modal-pill').forEach(pill => {
+    pill.classList.toggle('selected', pill.dataset.cat === p.cat);
+  });
+  const overlay = document.getElementById('pieceModalOverlay');
+  if (p.cat === 'top') {
+    overlay.style.display = 'flex';
+    document.getElementById('pieceModalOverlayCheck').checked = p.isOverlay;
+  } else {
+    overlay.style.display = 'none';
+  }
+  document.getElementById('pieceModal').classList.add('show');
+}
+
+function selectModalCat(btn) {
+  document.querySelectorAll('.piece-modal-pill').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const overlay = document.getElementById('pieceModalOverlay');
+  if (btn.dataset.cat === 'top') overlay.style.display = 'flex';
+  else { overlay.style.display = 'none'; document.getElementById('pieceModalOverlayCheck').checked = false; }
+}
+
+function savePieceEdit() {
+  const p = pieces.find(x => x.id === editingId);
+  p.desc = document.getElementById('pieceModalDesc').value;
+  const newCat = document.querySelector('.piece-modal-pill.selected').dataset.cat;
+  if (newCat !== p.cat) {
+    p.cat = newCat;
+    if (newCat !== 'top') p.isOverlay = false;
+  } else if (p.cat === 'top') {
+    p.isOverlay = document.getElementById('pieceModalOverlayCheck').checked;
+  }
+  localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+  document.getElementById('pieceModal').classList.remove('show');
+  renderLook();
+  renderPieces();
+}
+
+function deletePieceFromModal() {
+  const idx = pieces.findIndex(x => x.id === editingId);
+  if (idx >= 0) {
+    pieces.splice(idx, 1);
+    favs = favs.filter(f => ![f.top, f.overlay, f.bottom, f.shoes].includes(editingId));
+    localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+    localStorage.setItem('ml_favs', JSON.stringify(favs));
+    document.getElementById('pieceModal').classList.remove('show');
+    renderLook();
+    renderPieces();
+  }
+}
+
+let favFilterOpen = false;
+function toggleFavFilter() {
+  favFilterOpen = !favFilterOpen;
+  document.getElementById('favFilterPanel').classList.toggle('show', favFilterOpen);
+  document.querySelector('.favs-filter-toggle').classList.toggle('active', favFilterOpen || favFilterIds.size > 0);
+  if (favFilterOpen) renderFilterList();
+}
+
+function renderFilterList() {
+  const query = (document.getElementById('favSearch').value || '').toLowerCase();
+  const list = document.getElementById('favFilterList');
+  const favPieceIds = new Set();
+  favs.forEach(f => { [f.top, f.overlay, f.bottom, f.shoes].filter(Boolean).forEach(id => favPieceIds.add(id)); });
+  const relevantPieces = pieces.filter(p => favPieceIds.has(p.id));
+  const filtered = query ? relevantPieces.filter(p => p.desc.toLowerCase().includes(query)) : relevantPieces;
+  list.innerHTML = filtered.map(p => `<button class="filter-chip ${favFilterIds.has(p.id) ? 'selected' : ''}" onclick="toggleFilterChip('${p.id}')">${p.desc}</button>`).join('');
+}
+
+function toggleFilterChip(id) {
+  if (favFilterIds.has(id)) favFilterIds.delete(id);
+  else favFilterIds.add(id);
+  updateFilterLabel();
+  renderFilterList();
+  renderFavs();
+}
+
+function updateFilterLabel() {
+  const label = document.getElementById('filterLabel');
+  const clearBtn = document.getElementById('clearFiltersBtn');
+  if (favFilterIds.size > 0) {
+    label.textContent = `Filtrando (${favFilterIds.size})`;
+    clearBtn.style.display = 'inline-flex';
+  } else {
+    label.textContent = 'Filtrar por peça';
+    clearBtn.style.display = 'none';
+  }
+  document.querySelector('.favs-filter-toggle').classList.toggle('active', favFilterOpen || favFilterIds.size > 0);
+}
+
+function renderFavs() {
+  const cont = document.getElementById('favsContent');
+  if (!favs.length) {
+    cont.innerHTML = '<div class="empty-state">Nenhum look favorito ainda.<br>Monte um look e toque em ♡</div>';
+    return;
+  }
+  let filtered = favs;
+  if (favFilterIds.size > 0) {
+    filtered = favs.filter(f => {
+      const ids = [f.top, f.overlay, f.bottom, f.shoes].filter(Boolean);
+      return [...favFilterIds].every(fid => ids.includes(fid));
+    });
+  }
+  if (!filtered.length) {
+    cont.innerHTML = '<div class="empty-state">Nenhum look encontrado com esse filtro.</div>';
+    return;
+  }
+  cont.innerHTML = filtered.map((f) => {
+    const i = favs.indexOf(f);
+    const t = pieces.find(p => p.id === f.top);
+    const o = f.overlay ? pieces.find(p => p.id === f.overlay) : null;
+    const b = pieces.find(p => p.id === f.bottom);
+    const s = pieces.find(p => p.id === f.shoes);
+    if (!t || !b || !s) return '';
+    const allExpanded = [t, o, b, s].filter(Boolean);
+    const stackOrder = [b, s, t].filter(Boolean);
+    if (expandedFav === i) {
+      return `<div class="fav-expanded-wrapper" onclick="closeFavExpanded()">
+        <div class="fav-expanded" onclick="event.stopPropagation()">
+          <button class="fav-close-btn" onclick="closeFavExpanded()">✕</button>
+          <div class="fav-pieces-row">
+            ${allExpanded.map(p => `<div class="fav-piece"><img src="${p.photo}"><div class="fp-name">${p.desc}</div></div>`).join('')}
+          </div>
+          <div class="fav-notes">
+            <textarea id="favNote${i}" placeholder="Observações (dia, acessórios...)">${f.notes || ''}</textarea>
+          </div>
+          <button class="fav-note-save" onclick="saveNoteBtn(${i})">Salvar observação</button>
+          <button class="fav-remove" onclick="removeFav(${i})">✕ Remover dos favoritos</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="fav-stack" onclick="expandFav(${i})">
+      <div class="stack-visual">
+        ${stackOrder.slice(0, 3).map(p => `<img class="stack-img" src="${p.photo}">`).join('')}
+      </div>
+      <div class="stack-label">${allExpanded.map(p => p.desc).join(' + ')}</div>
+    </div>`;
+  }).join('');
+}
+
+function expandFav(i) { expandedFav = expandedFav === i ? null : i; renderFavs(); }
+function closeFavExpanded() { expandedFav = null; renderFavs(); }
+function saveNoteBtn(i) {
+  const textarea = document.getElementById('favNote' + i);
+  favs[i].notes = textarea.value;
+  localStorage.setItem('ml_favs', JSON.stringify(favs));
+  expandedFav = null;
+  renderFavs();
+}
+function clearFavFilters() {
+  favFilterIds.clear();
+  document.getElementById('favSearch').value = '';
+  updateFilterLabel();
+  renderFilterList();
+  renderFavs();
+}
+function removeFav(i) { favs.splice(i, 1); expandedFav = null; localStorage.setItem('ml_favs', JSON.stringify(favs)); renderFavs(); }
+
+function openModal() {
+  tempPhoto = null; tempCat = null;
+  document.getElementById('inputDesc').value = '';
+  document.getElementById('photoPreviewArea').style.display = 'none';
+  document.getElementById('photoOptions').style.display = 'flex';
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+  document.getElementById('overlayCheckRow').classList.remove('visible');
+  document.getElementById('overlayCheck').checked = false;
+  document.getElementById('filePhoto').value = '';
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
+}
+
+function clearPhoto() {
+  tempPhoto = null;
+  document.getElementById('photoPreviewArea').style.display = 'none';
+  document.getElementById('photoOptions').style.display = 'flex';
+  document.getElementById('filePhoto').value = '';
+}
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const max = 400;
+      let w = img.width, h = img.height;
+      if (w > h) { h = h * max / w; w = max; } else { w = w * max / h; h = max; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      tempPhoto = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('photoPreview').src = tempPhoto;
+      document.getElementById('photoPreviewArea').style.display = 'block';
+      document.getElementById('photoOptions').style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function pickCat(btn) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+  btn.classList.add('selected');
+  tempCat = btn.dataset.cat;
+  const row = document.getElementById('overlayCheckRow');
+  if (tempCat === 'top') row.classList.add('visible');
+  else { row.classList.remove('visible'); document.getElementById('overlayCheck').checked = false; }
+}
+
+function savePiece() {
+  const desc = document.getElementById('inputDesc').value.trim();
+  if (!tempPhoto || !desc || !tempCat) return;
+  pieces.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    photo: tempPhoto, desc, cat: tempCat,
+    isOverlay: tempCat === 'top' ? document.getElementById('overlayCheck').checked : false
+  });
+  localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+  document.getElementById('modal').classList.remove('show');
+  renderLook();
+  renderPieces();
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+renderLook();
+</script>
+</body>
+</html>
