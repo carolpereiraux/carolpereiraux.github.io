@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>LOTD</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #FAF9F7;
+  --card: #FFFFFF;
+  --border: #E8E6E1;
+  --text: #2C2C2C;
+  --text-light: #8A8680;
+  --accent: #C4A882;
+  --accent-light: #F0E9DF;
+  --danger: #D4836A;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --radius: 14px;
+  --nav-h: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ── PAGES ── */
+.page { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.page.active { display: flex; }
+
+/* ── HEADER ── */
+.page-header { text-align: center; padding: 14px 20px 10px; flex-shrink: 0; }
+.page-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500; font-size: 22px;
+  letter-spacing: 0.5px; color: var(--text);
+}
+
+/* ── LOOK HEADER ── */
+.look-topbar { display: flex; align-items: center; padding: 12px 20px 4px; flex-shrink: 0; }
+.look-logo {
+  font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 15px;
+  color: var(--text); background: var(--accent-light);
+  padding: 5px 12px; border-radius: 8px; letter-spacing: 0.3px;
+}
+.look-title-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 20px 4px; flex-shrink: 0;
+}
+.look-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 22px;
+  color: var(--text);
+}
+.btn-shuffle-inline {
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+  border: none; border-radius: 50px; background: var(--text); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 400;
+  cursor: pointer; transition: all 0.25s; box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  flex-shrink: 0;
+}
+.btn-shuffle-inline svg { stroke: white; flex-shrink: 0; }
+.btn-shuffle-inline:active { transform: scale(0.95); opacity: 0.85; }
+.btn-shuffle-inline.shuffling { animation: shake 0.4s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px) rotate(-2deg); }
+  40% { transform: translateX(4px) rotate(2deg); }
+  60% { transform: translateX(-3px) rotate(-1deg); }
+  80% { transform: translateX(3px) rotate(1deg); }
+}
+
+/* ── LOOK BUILDER ── */
+.look-builder { flex: 1; display: flex; flex-direction: column; padding: 4px 20px 8px; overflow: hidden; }
+.look-card {
+  flex: 1; background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; overflow: hidden; position: relative; padding: 32px;
+}
+.look-card-heart {
+  position: absolute; top: 12px; right: 12px; z-index: 10;
+  background: white; border: 2px solid var(--text); width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.25s;
+}
+.look-card-heart.is-fav { background: var(--text); color: white; border-color: var(--text); }
+
+.look-inner { display: flex; flex-direction: column; flex: 1; gap: 16px; justify-content: center; min-height: 0; }
+
+.empty-look { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; flex: 1; color: var(--text-light); font-size: 14px; line-height: 1.6; gap: 16px; }
+
+.slot { display: flex; flex-direction: column; align-items: center; flex: 1; min-height: 0; position: relative; }
+.overlay-btn {
+  position: absolute; bottom: -10px; right: calc(50% - 80px - 6px); z-index: 15;
+  width: 26px; height: 26px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,0.45); color: white; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; line-height: 1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.overlay-btn:active { background: rgba(0,0,0,0.6); }
+
+.slot-carousel {
+  display: flex; align-items: center; gap: 6px; flex: 1; width: 100%;
+  justify-content: center; min-height: 0; padding: 4px 8px;
+}
+.slot-carousel .arrow {
+  background: none; border: none; font-size: 20px; color: var(--text-light);
+  cursor: pointer; padding: 6px; flex-shrink: 0; transition: color 0.2s;
+}
+.slot-carousel .arrow:active { color: var(--accent); }
+.slot-card {
+  flex: 1; max-width: 160px; max-height: 100%; border-radius: 16px;
+  overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;
+}
+.slot-card.empty {
+  border: 1.5px dashed var(--border); color: var(--text-light);
+  font-size: 12px; cursor: pointer; min-height: 80px; border-radius: 16px;
+}
+.slot-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+
+.fab {
+  position: fixed; bottom: calc(var(--nav-h) + var(--safe-bottom) + 14px); right: 20px;
+  width: 50px; height: 50px; border-radius: 50%; background: var(--text); color: white;
+  border: none; font-size: 26px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18); cursor: pointer; z-index: 50; transition: transform 0.2s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ── PIECES PAGE ── */
+.pieces-content { flex: 1; overflow-y: auto; padding: 0 0 16px; -webkit-overflow-scrolling: touch; }
+.cat-section { margin-bottom: 20px; }
+.cat-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; margin-bottom: 10px; cursor: pointer;
+}
+.cat-title-row .cat-name {
+  font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--text);
+}
+.cat-title-row .cat-count { font-size: 12px; color: var(--text-light); }
+
+.pieces-hscroll {
+  display: flex; gap: 10px; overflow-x: auto; padding: 0 20px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.pieces-hscroll::-webkit-scrollbar { display: none; }
+.piece-hcard { flex-shrink: 0; width: 100px; cursor: pointer; }
+.piece-hcard-img {
+  width: 100px; height: 130px; border-radius: 10px; overflow: hidden;
+  background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.piece-hcard-img img { width: 100%; height: 100%; object-fit: cover; }
+.piece-hcard-name {
+  font-size: 11px; color: var(--text-light); text-align: center;
+  margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── CATEGORY DRILL-DOWN ── */
+.cat-drilldown {
+  position: fixed; inset: 0; background: var(--bg); z-index: 200;
+  display: none; flex-direction: column;
+  padding-top: var(--safe-top); padding-bottom: var(--safe-bottom);
+}
+.cat-drilldown.show { display: flex; }
+.cat-dd-header {
+  display: flex; align-items: center; gap: 12px; padding: 14px 20px 10px; flex-shrink: 0;
+}
+.cat-dd-back {
+  background: none; border: none; font-size: 22px; color: var(--text); cursor: pointer; padding: 4px;
+}
+.cat-dd-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; }
+.cat-dd-grid {
+  flex: 1; overflow-y: auto; padding: 0 20px 20px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  align-content: start; -webkit-overflow-scrolling: touch;
+}
+.cat-dd-item {
+  aspect-ratio: 3/4; border-radius: 10px; overflow: hidden; position: relative;
+  background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); cursor: pointer;
+}
+.cat-dd-item img { width: 100%; height: 100%; object-fit: cover; }
+.cat-dd-item .dd-label {
+  position: absolute; bottom: 0; left: 0; right: 0; padding: 3px 6px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.55));
+  color: white; font-size: 10px; text-align: center;
+}
+.cat-dd-item .dd-overlay-badge {
+  position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.5);
+  color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px;
+}
+
+/* ── PIECE DETAIL/EDIT MODAL ── */
+.piece-modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 300; align-items: center; justify-content: center; padding: 20px;
+}
+.piece-modal-overlay.show { display: flex; }
+.piece-modal {
+  background: var(--card); border-radius: 20px; width: 100%; max-width: 360px;
+  max-height: 85vh; padding: 20px; position: relative;
+  animation: fadeIn 0.25s ease; display: flex; flex-direction: column; overflow: hidden;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.piece-modal-img {
+  width: 100%; flex: 1; border-radius: 14px; overflow: hidden;
+  margin-bottom: 16px; background: var(--bg); min-height: 0;
+}
+.piece-modal-img img { width: 100%; height: 100%; object-fit: cover; }
+.piece-modal-content { flex-shrink: 0; overflow-y: auto; max-height: calc(85vh - 300px); }
+.pm-field { margin-bottom: 12px; }
+.pm-field label {
+  display: block; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-light); margin-bottom: 5px;
+}
+.pm-field input[type="text"] {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s;
+}
+.pm-field input[type="text"]:focus { border-color: var(--accent); }
+.pm-cats { display: flex; gap: 6px; }
+.pm-cat {
+  flex: 1; padding: 8px 4px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: none; font-family: 'DM Sans', sans-serif; font-size: 11px;
+  color: var(--text-light); cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.pm-cat.selected { border-color: var(--accent); background: var(--accent-light); color: var(--text); }
+.pm-overlay-row {
+  display: none; align-items: center; gap: 8px; margin-top: 8px;
+  font-size: 13px; color: var(--text); cursor: pointer;
+}
+.pm-overlay-row.visible { display: flex; }
+.pm-overlay-row input { accent-color: var(--accent); width: 16px; height: 16px; }
+.remove-bg-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+  font-size: 13px; color: var(--text); cursor: pointer;
+}
+.remove-bg-row input { accent-color: var(--accent); width: 16px; height: 16px; }
+.remove-bg-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
+  padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  background: none; font-family: 'DM Sans', sans-serif; font-size: 11px;
+  color: var(--text-light); cursor: pointer; transition: all 0.2s;
+}
+.remove-bg-btn:active { background: var(--accent-light); border-color: var(--accent); color: var(--text); }
+.remove-bg-btn.loading {
+  opacity: 0.6; cursor: not-allowed;
+}
+.remove-bg-btn svg { width: 14px; height: 14px; }
+.pm-actions { display: flex; gap: 10px; margin-top: 16px; }
+.pm-save {
+  flex: 1; padding: 12px; border: none; border-radius: 12px;
+  background: var(--text); color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+}
+.pm-save:active { opacity: 0.8; }
+.pm-delete {
+  padding: 12px 16px; border: 1.5px solid var(--danger); border-radius: 12px;
+  background: none; color: var(--danger); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.pm-delete:active { background: var(--danger); color: white; }
+
+/* ── FAVORITES ── */
+.favs-content { flex: 1; overflow-y: auto; padding: 0 20px 16px; -webkit-overflow-scrolling: touch; }
+.fav-stack { margin-bottom: 16px; cursor: pointer; }
+.stack-visual { position: relative; height: 110px; width: 160px; margin: 0 auto; }
+.stack-visual .stack-img {
+  position: absolute; width: 100px; height: 80px; object-fit: cover;
+  border-radius: 8px; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.stack-visual .stack-img:nth-child(1) { top: 0; left: 10px; transform: rotate(-5deg); z-index: 1; }
+.stack-visual .stack-img:nth-child(2) { top: 10px; left: 35px; transform: rotate(2deg); z-index: 2; }
+.stack-visual .stack-img:nth-child(3) { top: 20px; left: 20px; transform: rotate(-1deg); z-index: 3; }
+.stack-label { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 4px; }
+.fav-expanded {
+  background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); animation: fadeIn 0.25s ease;
+  position: relative;
+}
+.fav-expanded-wrapper { cursor: pointer; }
+.fav-close-btn {
+  position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.08);
+  border: none; color: var(--text-light); width: 26px; height: 26px; border-radius: 50%;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; z-index: 5;
+}
+.fav-close-btn:active { background: rgba(0,0,0,0.15); }
+.clear-filters-btn {
+  display: inline-flex; align-items: center; gap: 4px; margin-left: 8px;
+  padding: 4px 10px; border: 1px solid var(--danger); border-radius: 20px;
+  background: none; color: var(--danger); font-family: 'DM Sans', sans-serif;
+  font-size: 11px; cursor: pointer; transition: all 0.2s;
+}
+.clear-filters-btn:active { background: var(--danger); color: white; }
+.fav-pieces-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.fav-pieces-row .fav-piece { flex: 1; border-radius: 8px; overflow: hidden; aspect-ratio: 3/4; }
+.fav-pieces-row .fav-piece img { width: 100%; height: 100%; object-fit: cover; }
+.fav-pieces-row .fav-piece .fp-name { font-size: 10px; color: var(--text-light); text-align: center; margin-top: 3px; }
+.fav-notes textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+  background: var(--bg); resize: none; height: 56px; outline: none; transition: border-color 0.2s;
+}
+.fav-notes textarea:focus { border-color: var(--accent); }
+.fav-notes textarea::placeholder { color: var(--text-light); }
+.fav-remove {
+  display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px;
+  background: none; border: none; color: var(--danger); font-size: 12px;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; width: 100%; padding: 6px;
+}
+
+/* ── FAVS FILTER ── */
+.favs-filter-bar { padding: 0 20px 8px; flex-shrink: 0; }
+.favs-filter-toggle {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  cursor: pointer; font-size: 13px; color: var(--text-light); transition: all 0.2s;
+}
+.favs-filter-toggle.active { border-color: var(--accent); color: var(--text); }
+.favs-filter-toggle svg { flex-shrink: 0; }
+.favs-filter-panel {
+  display: none; margin-top: 8px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px; box-shadow: var(--shadow);
+}
+.favs-filter-panel.show { display: block; }
+.favs-search {
+  width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg);
+  color: var(--text); outline: none; margin-bottom: 8px; transition: border-color 0.2s;
+}
+.favs-search:focus { border-color: var(--accent); }
+.favs-search::placeholder { color: var(--text-light); }
+.favs-filter-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto; }
+.filter-chip {
+  padding: 5px 12px; border: 1.5px solid var(--border); border-radius: 20px;
+  background: none; font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: var(--text-light); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.filter-chip.selected { border-color: var(--accent); background: var(--accent-light); color: var(--text); }
+.favs-clear-filter {
+  display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px;
+  border: 1.5px solid var(--danger); border-radius: 20px; background: none;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--danger);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.favs-clear-filter:active { background: var(--danger); color: white; }
+
+/* ── FAV NOTE SAVE ── */
+.fav-note-save {
+  display: flex; align-items: center; justify-content: center; margin-top: 8px;
+  padding: 8px 20px; border: none; border-radius: 8px; background: var(--text); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer;
+  width: 100%; transition: opacity 0.2s;
+}
+.fav-note-save:active { opacity: 0.8; }
+.fav-note-saved {
+  display: flex; align-items: center; justify-content: center; margin-top: 8px;
+  padding: 8px 20px; border: none; border-radius: 8px; background: var(--accent-light); color: var(--accent);
+  font-family: 'DM Sans', sans-serif; font-size: 12px; width: 100%;
+}
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 13px; line-height: 1.6; }
+
+/* ── ADD MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  z-index: 100; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-sheet {
+  background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 420px;
+  padding: 20px 24px calc(24px + var(--safe-bottom)); animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
+.modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 16px; }
+.modal-title {
+  font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500;
+  margin-bottom: 16px; text-align: center;
+}
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-light); margin-bottom: 6px;
+}
+.form-group input[type="text"] {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg);
+  color: var(--text); outline: none; transition: border-color 0.2s;
+}
+.form-group input[type="text"]:focus { border-color: var(--accent); }
+.cat-pills { display: flex; gap: 8px; }
+.cat-pill {
+  flex: 1; padding: 8px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: none; font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: var(--text-light); cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.cat-pill.selected { border-color: var(--accent); background: var(--accent-light); color: var(--text); }
+.overlay-check-row {
+  display: none !important; align-items: center; gap: 8px; margin-top: 10px;
+  font-size: 13px; color: var(--text); cursor: pointer;
+}
+.overlay-check-row.visible { display: flex !important; }
+.overlay-check-row input { accent-color: var(--accent); width: 16px; height: 16px; }
+.photo-options {
+  display: flex; gap: 10px;
+}
+.photo-opt {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border: 1.5px dashed var(--border); border-radius: 10px;
+  background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: var(--text-light); cursor: pointer; transition: all 0.2s;
+}
+.photo-opt:active { border-color: var(--accent); color: var(--accent); }
+.photo-opt svg { stroke: currentColor; }
+.photo-preview-area {
+  border-radius: 10px; overflow: hidden; position: relative; height: 120px;
+  background: var(--bg); margin-bottom: 8px;
+}
+.photo-preview-area img { width: 100%; height: 100%; object-fit: cover; }
+#photoActionsArea { 
+  display: none;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  gap: 8px;
+}
+#photoActionsArea.show { 
+  display: flex !important; 
+}
+.photo-change {
+  position: absolute; bottom: 6px; right: 6px; padding: 4px 10px;
+  background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 6px;
+  font-family: 'DM Sans', sans-serif; font-size: 11px; cursor: pointer;
+  white-space: nowrap;
+}
+.btn-save {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: var(--text); color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: opacity 0.2s;
+}
+.btn-save:active { opacity: 0.8; }
+.btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary {
+  width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 12px;
+  background: transparent; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 400; cursor: pointer; margin-top: 8px; transition: all 0.2s;
+}
+.btn-secondary:active { background: var(--bg); }
+
+/* ── MULTIPLE PHOTOS SCREEN ── */
+.multi-photos-screen {
+  position: fixed; inset: 0; background: var(--bg); z-index: 150;
+  display: none; flex-direction: column; padding-top: var(--safe-top); padding-bottom: var(--safe-bottom);
+}
+.multi-photos-screen.show { display: flex; }
+.multi-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 10px; flex-shrink: 0; border-bottom: 1px solid var(--border);
+}
+.multi-back-btn {
+  background: none; border: none; font-size: 24px; color: var(--text);
+  cursor: pointer; padding: 4px; width: 24px;
+}
+.multi-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; }
+.multi-carousel-wrapper {
+  flex: 1; display: flex; align-items: center; padding: 20px; gap: 12px; min-height: 0; overflow: hidden;
+}
+.multi-carousel-arrow {
+  background: none; border: none; font-size: 28px; color: var(--text);
+  cursor: pointer; padding: 8px; flex-shrink: 0;
+}
+.multi-carousel {
+  flex: 1; height: 100%; overflow: hidden; position: relative;
+}
+.multi-photos-container {
+  display: flex; gap: 20px; height: 100%; scroll-behavior: smooth;
+  transition: transform 0.3s ease;
+}
+.multi-photo-card {
+  flex-shrink: 0; width: 100%; height: 100%; display: flex; flex-direction: column;
+  background: var(--card); border-radius: 16px; padding: 16px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.multi-photo-card > div:first-child {
+  flex: 1; position: relative; margin-bottom: 16px; min-height: 0;
+}
+.multi-photo-card img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 12px;
+  background: var(--bg);
+}
+.multi-photo-card > .form-group {
+  flex-shrink: 0;
+}
+.multi-delete-btn {
+  position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
+  border-radius: 50%; background: rgba(0,0,0,0.6); color: white;
+  border: none; font-size: 16px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.multi-delete-btn:active { background: rgba(0,0,0,0.8); }
+.multi-indicator {
+  text-align: center; padding: 0 20px 8px; font-size: 12px; color: var(--text-light); flex-shrink: 0;
+}
+.multi-actions {
+  display: flex; gap: 10px; padding: 0 20px 16px; flex-shrink: 0;
+}
+.multi-actions .btn-save { margin: 0; }
+
+/* ── CONFIRMATION MODAL ── */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 400; align-items: center; justify-content: center;
+}
+.confirm-overlay.show { display: flex; }
+.confirm-box {
+  background: var(--card); border-radius: 16px; padding: 24px; max-width: 280px;
+  text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.confirm-box h2 {
+  font-family: 'Cormorant Garamond', serif; font-size: 18px; margin-bottom: 8px;
+  color: var(--text);
+}
+.confirm-box p {
+  font-size: 14px; color: var(--text-light); margin-bottom: 20px; line-height: 1.5;
+}
+.confirm-actions {
+  display: flex; gap: 10px;
+}
+.confirm-actions button {
+  flex: 1; padding: 10px; border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer;
+  transition: all 0.2s;
+}
+.confirm-actions .confirm-cancel {
+  background: var(--border); color: var(--text);
+}
+.confirm-actions .confirm-cancel:active { background: var(--bg); }
+.confirm-actions .confirm-delete {
+  background: var(--danger); color: white;
+}
+.confirm-actions .confirm-delete:active { opacity: 0.8; }
+.toast {
+  position: fixed; bottom: calc(var(--nav-h) + 20px + var(--safe-bottom)); left: 50%;
+  transform: translateX(-50%); background: var(--danger); color: white;
+  padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideUpToast 0.3s ease;
+}
+@keyframes slideUpToast {
+  from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* ── NAV ── */
+.bottom-nav {
+  display: flex; height: var(--nav-h); border-top: 1px solid var(--border);
+  background: var(--card); flex-shrink: 0;
+}
+.nav-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; background: none; border: none; color: var(--text-light);
+  font-family: 'DM Sans', sans-serif; font-size: 10px; cursor: pointer;
+  transition: color 0.2s; padding-bottom: 4px;
+}
+.nav-tab svg { width: 22px; height: 22px; }
+.nav-tab.active { color: var(--text); }
+.nav-tab.active svg { stroke-width: 2; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- PAGE: LOOK BUILDER -->
+  <div class="page active" id="page-look">
+    <div class="look-topbar"><span class="look-logo">LOTD</span></div>
+    <div class="look-title-bar">
+      <div class="look-title">Crie seu look</div>
+      <button class="btn-shuffle-inline" onclick="shuffleLook()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        Crie pra mim
+      </button>
+    </div>
+    <div class="look-builder">
+      <div class="look-card" id="lookCard">
+        <button class="look-card-heart" id="btnFavLook" onclick="toggleFavLook()">♡</button>
+        <div class="look-inner" id="lookBuilder"></div>
+      </div>
+    </div>
+    <button class="fab" onclick="openModal()">+</button>
+  </div>
+
+  <!-- PAGE: MY PIECES -->
+  <div class="page" id="page-pieces">
+    <div class="page-header"><h1>Minhas Peças</h1></div>
+    <div class="pieces-content" id="piecesContent"></div>
+    <button class="fab" onclick="openModal()">+</button>
+  </div>
+
+  <!-- PAGE: FAVORITES -->
+  <div class="page" id="page-favs">
+    <div class="page-header"><h1>Favoritos</h1></div>
+    <div class="favs-filter-bar">
+      <div style="display:flex;align-items:center;">
+        <div class="favs-filter-toggle" onclick="toggleFavFilter()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          <span id="filterLabel">Filtrar por peça</span>
+        </div>
+        <button class="clear-filters-btn" id="clearFiltersBtn" style="display:none" onclick="clearFavFilters()">Limpar filtros</button>
+      </div>
+      <div class="favs-filter-panel" id="favFilterPanel">
+        <input type="text" class="favs-search" id="favSearch" placeholder="Buscar peça..." oninput="renderFilterList()">
+        <div class="favs-filter-list" id="favFilterList"></div>
+      </div>
+    </div>
+    <div class="favs-content" id="favsContent"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" onclick="switchPage('look')" id="tab-look">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Criar
+    </button>
+    <button class="nav-tab" onclick="switchPage('pieces')" id="tab-pieces">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16.01 2.03a1.61 1.61 0 00-2.05 1.01L9.05 16.96a1.61 1.61 0 001.01 2.05l4.37 1.43a1.61 1.61 0 002.05-1.01l4.91-13.92a1.61 1.61 0 00-1.01-2.05z"/><path d="M4.5 4.5h4a1 1 0 011 1v13a1 1 0 01-1 1h-4a1 1 0 01-1-1v-13a1 1 0 011-1z"/></svg>
+      Peças
+    </button>
+    <button class="nav-tab" onclick="switchPage('favs')" id="tab-favs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Favoritos
+    </button>
+  </nav>
+
+  <!-- ADD PIECE MODAL (single photo) -->
+  <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nova Peça</div>
+      <div class="form-group">
+        <label>Foto</label>
+        <div class="photo-preview-area" id="photoPreviewArea" style="display:none;">
+          <img id="photoPreview">
+          <div id="photoActionsArea" style="gap: 8px;">
+            <button class="photo-change" onclick="document.getElementById('fileInput').click()">Trocar foto</button>
+          </div>
+        </div>
+        <div class="photo-options" id="photoOptions">
+          <button class="photo-opt" onclick="document.getElementById('fileInput').click()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Selecionar ou tirar foto
+          </button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" capture="environment" multiple onchange="handlePhoto(this)" style="display:none">
+      </div>
+      <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" id="inputDesc" placeholder="Ex: cropped branco">
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <div class="cat-pills">
+          <button class="cat-pill" data-cat="top" onclick="pickCat(this)">Parte de cima</button>
+          <button class="cat-pill" data-cat="bottom" onclick="pickCat(this)">Parte de baixo</button>
+          <button class="cat-pill" data-cat="shoes" onclick="pickCat(this)">Calçado</button>
+        </div>
+        <label class="overlay-check-row" id="overlayCheckRow">
+          <input type="checkbox" id="overlayCheck"> Peça de sobreposição (jaqueta, cardigan...)
+        </label>
+      </div>
+      <button class="btn-save" onclick="savePiece()" id="btnSavePiece" disabled>Adicionar peça</button>
+      <button class="btn-secondary" onclick="selectMorePhotos()" id="btnMorePhotos" style="display:none;">Selecionar mais fotos</button>
+    </div>
+  </div>
+
+  <!-- ADD MULTIPLE PIECES CAROUSEL (fullscreen) -->
+  <div class="multi-photos-screen" id="multiPhotosScreen">
+    <div class="multi-header">
+      <button class="multi-back-btn" onclick="backFromMultiPhotos()">‹</button>
+      <div class="multi-title">Adicionar Peças</div>
+      <div style="width: 24px;"></div>
+    </div>
+    <div class="multi-indicator" id="multiIndicator"></div>
+    <div class="multi-carousel-wrapper">
+      <button class="multi-carousel-arrow left" onclick="navMultiPhotos(-1)">‹</button>
+      <div class="multi-carousel">
+        <div class="multi-photos-container" id="multiPhotosContainer"></div>
+      </div>
+      <button class="multi-carousel-arrow right" onclick="navMultiPhotos(1)">›</button>
+    </div>
+    <div class="multi-actions">
+      <button class="btn-save" id="btnSaveMultiple" onclick="saveMultiplePieces()" disabled>Adicionar todas</button>
+    </div>
+  </div>
+
+  <!-- CATEGORY DRILL-DOWN -->
+  <div class="cat-drilldown" id="catDrilldown">
+    <div class="cat-dd-header">
+      <button class="cat-dd-back" onclick="closeDrilldown()">‹</button>
+      <div class="cat-dd-title" id="ddTitle"></div>
+    </div>
+    <div class="cat-dd-grid" id="ddGrid"></div>
+  </div>
+
+  <!-- PIECE DETAIL/EDIT MODAL -->
+  <div class="piece-modal-overlay" id="pieceModal" onclick="closePieceModalOutside(event)">
+    <div class="piece-modal">
+      <div class="piece-modal-img"><img id="pmImg"></div>
+      <div class="piece-modal-content">
+        <div class="pm-field">
+          <label>Descrição</label>
+          <input type="text" id="pmDesc">
+        </div>
+        <div class="pm-field">
+          <label>Categoria</label>
+          <div class="pm-cats">
+            <button class="pm-cat" data-cat="top" onclick="pickPmCat(this)">Parte de cima</button>
+            <button class="pm-cat" data-cat="bottom" onclick="pickPmCat(this)">Parte de baixo</button>
+            <button class="pm-cat" data-cat="shoes" onclick="pickPmCat(this)">Calçado</button>
+          </div>
+          <label class="pm-overlay-row" id="pmOverlayRow">
+            <input type="checkbox" id="pmOverlayCheck"> Peça de sobreposição
+          </label>
+        </div>
+      </div>
+      <div class="pm-actions">
+        <button class="pm-save" onclick="savePieceEdit()">Salvar</button>
+        <button class="pm-delete" onclick="deletePieceFromModal()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──
+let pieces = JSON.parse(localStorage.getItem('ml_pieces') || '[]');
+let favs = JSON.parse(localStorage.getItem('ml_favs') || '[]');
+let sel = { top: 0, overlay: 0, bottom: 0, shoes: 0 };
+let showOverlay = false;
+let tempPhoto = null;
+let tempCat = null;
+let tempPhotos = []; // Array de fotos para múltiplas
+let multiPhotoIndex = 0;
+let expandedFav = null;
+let editingPieceId = null;
+let editCat = null;
+
+// ── PAGES ──
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const pageId = name === 'look' ? 'look' : name === 'pieces' ? 'pieces' : 'favs';
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'look') renderLook();
+  if (name === 'pieces') renderPieces();
+  if (name === 'favs') renderFavs();
+}
+
+// ── HELPERS ──
+function byCategory(cat) { return pieces.filter(p => p.cat === cat); }
+function topRegular() { return pieces.filter(p => p.cat === 'top' && !p.isOverlay); }
+function topOverlays() { return pieces.filter(p => p.cat === 'top' && p.isOverlay); }
+
+// ── SHUFFLE ──
+function shuffleLook() {
+  const bottoms = byCategory('bottom');
+  const shoes = byCategory('shoes');
+  if (!bottoms.length || !shoes.length) return;
+
+  if (showOverlay) {
+    const overlays = topOverlays();
+    const regulars = topRegular();
+    if (overlays.length) sel.overlay = Math.floor(Math.random() * overlays.length);
+    if (regulars.length) sel.top = Math.floor(Math.random() * regulars.length);
+  } else {
+    const tops = topRegular().length ? topRegular() : byCategory('top');
+    if (!tops.length) return;
+    sel.top = Math.floor(Math.random() * tops.length);
+  }
+  sel.bottom = Math.floor(Math.random() * bottoms.length);
+  sel.shoes = Math.floor(Math.random() * shoes.length);
+
+  const btn = document.querySelector('.btn-shuffle-inline');
+  btn.classList.add('shuffling');
+  setTimeout(() => btn.classList.remove('shuffling'), 450);
+  renderLook();
+}
+
+// ── LOOK BUILDER ──
+function getSlotItems(key) {
+  if (showOverlay && key === 'overlay') {
+    return topOverlays().length ? topOverlays() : byCategory('top');
+  }
+  if (showOverlay && key === 'top') {
+    return topRegular().length ? topRegular() : byCategory('top');
+  }
+  return byCategory(key === 'overlay' ? 'top' : key);
+}
+
+function renderLook() {
+  const builder = document.getElementById('lookBuilder');
+  
+  // Verificar se tem peças em pelo menos 2 categorias (além de overlay)
+  const hasTop = byCategory('top').length > 0;
+  const hasBottom = byCategory('bottom').length > 0;
+  const hasShoes = byCategory('shoes').length > 0;
+  const categoriesWithPieces = [hasTop, hasBottom, hasShoes].filter(Boolean).length;
+  
+  // Esconder botão "Crie pra mim" se não tiver peças suficientes
+  const shuffleBtn = document.querySelector('.btn-shuffle-inline');
+  if (categoriesWithPieces < 2) {
+    shuffleBtn.style.display = 'none';
+  } else {
+    shuffleBtn.style.display = 'flex';
+  }
+  
+  // Empty state
+  if (!pieces.length) {
+    builder.innerHTML = `<div class="empty-look">
+      <div>Adicione duas peças de roupa para começar</div>
+      <button class="btn-shuffle-inline" style="background: var(--text);" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar peças
+      </button>
+    </div>`;
+    updateFavBtn();
+    return;
+  }
+
+  let html = '';
+
+  // Overlay slot (if active)
+  if (showOverlay) {
+    const oItems = getSlotItems('overlay');
+    const oItem = oItems.length ? oItems[sel.overlay % oItems.length] : null;
+    html += buildSlot('overlay', oItem, oItems.length > 1, false, true);
+  }
+
+  // Top slot
+  const tItems = getSlotItems('top');
+  const tItem = tItems.length ? tItems[sel.top % tItems.length] : null;
+  html += buildSlot('top', tItem, tItems.length > 1, !showOverlay && tItem != null, false);
+
+  // Bottom
+  const bItems = byCategory('bottom');
+  const bItem = bItems.length ? bItems[sel.bottom % bItems.length] : null;
+  html += buildSlot('bottom', bItem, bItems.length > 1, false, false);
+
+  // Shoes
+  const sItems = byCategory('shoes');
+  const sItem = sItems.length ? sItems[sel.shoes % sItems.length] : null;
+  html += buildSlot('shoes', sItem, sItems.length > 1, false, false);
+
+  builder.innerHTML = html;
+  updateFavBtn();
+}
+
+function buildSlot(key, item, showArrows, showPlus, showClose) {
+  let btnHtml = '';
+  if (showPlus) btnHtml = `<button class="overlay-btn" onclick="event.stopPropagation();toggleOverlay()">+</button>`;
+  if (showClose) btnHtml = `<button class="overlay-btn" onclick="event.stopPropagation();toggleOverlay()">✕</button>`;
+
+  return `<div class="slot">
+    <div class="slot-carousel">
+      ${showArrows ? `<button class="arrow" onclick="nav('${key}',-1)">‹</button>` : ''}
+      ${item
+        ? `<div class="slot-card"><img src="${item.photo}"></div>`
+        : `<div class="slot-card empty" onclick="openModal()">+ adicionar</div>`
+      }
+      ${showArrows ? `<button class="arrow" onclick="nav('${key}',1)">›</button>` : ''}
+    </div>
+    ${btnHtml}
+  </div>`;
+}
+
+function toggleOverlay() { showOverlay = !showOverlay; renderLook(); }
+
+function nav(cat, dir) {
+  const items = getSlotItems(cat);
+  if (!items.length) return;
+  sel[cat] = (sel[cat] + dir + items.length) % items.length;
+  renderLook();
+}
+
+function getCurrentLookIds() {
+  const ids = {};
+  if (showOverlay) {
+    const oItems = getSlotItems('overlay');
+    if (!oItems.length) return null;
+    ids.overlay = oItems[sel.overlay % oItems.length].id;
+    const tItems = getSlotItems('top');
+    if (!tItems.length) return null;
+    ids.top = tItems[sel.top % tItems.length].id;
+  } else {
+    const tItems = getSlotItems('top');
+    if (!tItems.length) return null;
+    ids.top = tItems[sel.top % tItems.length].id;
+  }
+  const bItems = byCategory('bottom');
+  if (!bItems.length) return null;
+  ids.bottom = bItems[sel.bottom % bItems.length].id;
+  const sItems = byCategory('shoes');
+  if (!sItems.length) return null;
+  ids.shoes = sItems[sel.shoes % sItems.length].id;
+  return ids;
+}
+
+function toggleFavLook() {
+  const ids = getCurrentLookIds();
+  if (!ids) return;
+  const key = ids.top + '|' + (ids.overlay || '') + '|' + ids.bottom + '|' + ids.shoes;
+  const idx = favs.findIndex(f => f.key === key);
+  if (idx >= 0) favs.splice(idx, 1);
+  else favs.push({ key, top: ids.top, overlay: ids.overlay || null, bottom: ids.bottom, shoes: ids.shoes, notes: '' });
+  localStorage.setItem('ml_favs', JSON.stringify(favs));
+  updateFavBtn();
+}
+
+function updateFavBtn() {
+  const ids = getCurrentLookIds();
+  const btn = document.getElementById('btnFavLook');
+  if (!ids) { btn.textContent = '♡'; btn.classList.remove('is-fav'); return; }
+  const key = ids.top + '|' + (ids.overlay || '') + '|' + ids.bottom + '|' + ids.shoes;
+  const isFav = favs.some(f => f.key === key);
+  btn.textContent = isFav ? '♥' : '♡';
+  btn.classList.toggle('is-fav', isFav);
+}
+
+// ── PIECES PAGE ──
+function renderPieces() {
+  const cats = [
+    { key: 'top', label: 'Partes de cima' },
+    { key: 'bottom', label: 'Partes de baixo' },
+    { key: 'shoes', label: 'Calçados' }
+  ];
+  const cont = document.getElementById('piecesContent');
+  if (!pieces.length) {
+    cont.innerHTML = '<div class="empty-state">Nenhuma peça cadastrada ainda.<br>Toque no <strong>+</strong> para adicionar.</div>';
+    return;
+  }
+  cont.innerHTML = cats.map(c => {
+    const items = byCategory(c.key);
+    if (items.length === 0) {
+      return `<div class="cat-section">
+        <div class="cat-title-row">
+          <span class="cat-name">${c.label}</span>
+          <span class="cat-count">0 peças</span>
+        </div>
+        <div style="padding: 0 20px; margin-bottom: 10px;">
+          <button class="cat-pill" style="width: 100%;" onclick="openModal()">+ adicionar</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="cat-section">
+      <div class="cat-title-row" onclick="openDrilldown('${c.key}','${c.label}')">
+        <span class="cat-name">${c.label}</span>
+        <span class="cat-count">${items.length} ${items.length === 1 ? 'peça' : 'peças'} ›</span>
+      </div>
+      <div class="pieces-hscroll">${items.map(p => `
+        <div class="piece-hcard" onclick="openPieceModal('${p.id}')">
+          <div class="piece-hcard-img"><img src="${p.photo}"></div>
+          <div class="piece-hcard-name">${p.desc}</div>
+        </div>
+      `).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── CATEGORY DRILL-DOWN ──
+function openDrilldown(cat, label) {
+  document.getElementById('ddTitle').textContent = label;
+  const items = byCategory(cat);
+  document.getElementById('ddGrid').innerHTML = items.map(p => `
+    <div class="cat-dd-item" onclick="openPieceModal('${p.id}')">
+      <img src="${p.photo}">
+      <div class="dd-label">${p.desc}</div>
+      ${p.isOverlay ? '<div class="dd-overlay-badge">sobreposição</div>' : ''}
+    </div>
+  `).join('');
+  document.getElementById('catDrilldown').classList.add('show');
+}
+
+function closeDrilldown() {
+  document.getElementById('catDrilldown').classList.remove('show');
+}
+
+// ── PIECE DETAIL/EDIT MODAL ──
+function openPieceModal(id) {
+  const p = pieces.find(x => x.id === id);
+  if (!p) return;
+  editingPieceId = id;
+  editCat = p.cat;
+  document.getElementById('pmImg').src = p.photo;
+  document.getElementById('pmDesc').value = p.desc;
+  document.querySelectorAll('.pm-cat').forEach(b => b.classList.toggle('selected', b.dataset.cat === p.cat));
+  const overlayRow = document.getElementById('pmOverlayRow');
+  overlayRow.classList.toggle('visible', p.cat === 'top');
+  document.getElementById('pmOverlayCheck').checked = !!p.isOverlay;
+  document.getElementById('pieceModal').classList.add('show');
+}
+
+function closePieceModalOutside(e) {
+  if (e.target === document.getElementById('pieceModal'))
+    document.getElementById('pieceModal').classList.remove('show');
+}
+
+function pickPmCat(btn) {
+  document.querySelectorAll('.pm-cat').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  editCat = btn.dataset.cat;
+  document.getElementById('pmOverlayRow').classList.toggle('visible', editCat === 'top');
+}
+
+function savePieceEdit() {
+  const p = pieces.find(x => x.id === editingPieceId);
+  if (!p) return;
+  p.desc = document.getElementById('pmDesc').value.trim() || p.desc;
+  p.cat = editCat;
+  p.isOverlay = editCat === 'top' ? document.getElementById('pmOverlayCheck').checked : false;
+  localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+  document.getElementById('pieceModal').classList.remove('show');
+  renderPieces();
+  renderLook();
+  if (document.getElementById('catDrilldown').classList.contains('show')) {
+    const title = document.getElementById('ddTitle').textContent;
+    const map = { 'Partes de cima': 'top', 'Partes de baixo': 'bottom', 'Calçados': 'shoes' };
+    openDrilldown(map[title], title);
+  }
+}
+
+let pendingDeleteId = null;
+
+function deletePieceFromModal() {
+  const p = pieces.find(x => x.id === editingPieceId);
+  if (!p) {
+    alert('Erro: peça não encontrada');
+    return;
+  }
+  
+  // Mostrar confirmação customizada
+  pendingDeleteId = editingPieceId;
+  document.getElementById('confirmMessage').textContent = `Deseja excluir "${p.desc}"?`;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  
+  const id = pendingDeleteId;
+  pieces = pieces.filter(p => p.id !== id);
+  favs = favs.filter(f => f.top !== id && f.bottom !== id && f.shoes !== id && f.overlay !== id);
+  localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+  localStorage.setItem('ml_favs', JSON.stringify(favs));
+  document.getElementById('pieceModal').classList.remove('show');
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDeleteId = null;
+  renderPieces();
+  renderLook();
+  if (document.getElementById('catDrilldown').classList.contains('show')) closeDrilldown();
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDeleteId = null;
+}
+
+// ── FAVORITES ──
+let favFilterIds = new Set();
+let favFilterOpen = false;
+
+function toggleFavFilter() {
+  favFilterOpen = !favFilterOpen;
+  document.getElementById('favFilterPanel').classList.toggle('show', favFilterOpen);
+  document.querySelector('.favs-filter-toggle').classList.toggle('active', favFilterOpen || favFilterIds.size > 0);
+  if (favFilterOpen) renderFilterList();
+}
+
+function renderFilterList() {
+  const query = (document.getElementById('favSearch').value || '').toLowerCase();
+  const list = document.getElementById('favFilterList');
+  // Get all pieces that appear in any favorite
+  const favPieceIds = new Set();
+  favs.forEach(f => { [f.top, f.overlay, f.bottom, f.shoes].filter(Boolean).forEach(id => favPieceIds.add(id)); });
+  const relevantPieces = pieces.filter(p => favPieceIds.has(p.id));
+  const filtered = query ? relevantPieces.filter(p => p.desc.toLowerCase().includes(query)) : relevantPieces;
+
+  list.innerHTML = filtered.map(p => `
+    <button class="filter-chip ${favFilterIds.has(p.id) ? 'selected' : ''}" onclick="toggleFilterChip('${p.id}')">
+      ${p.desc}
+    </button>
+  `).join('');
+}
+
+function toggleFilterChip(id) {
+  if (favFilterIds.has(id)) favFilterIds.delete(id);
+  else favFilterIds.add(id);
+  updateFilterLabel();
+  renderFilterList();
+  renderFavs();
+}
+
+function updateFilterLabel() {
+  const label = document.getElementById('filterLabel');
+  const clearBtn = document.getElementById('clearFiltersBtn');
+  if (favFilterIds.size > 0) {
+    label.textContent = `Filtrando (${favFilterIds.size})`;
+    clearBtn.style.display = 'inline-flex';
+  } else {
+    label.textContent = 'Filtrar por peça';
+    clearBtn.style.display = 'none';
+  }
+  document.querySelector('.favs-filter-toggle').classList.toggle('active', favFilterOpen || favFilterIds.size > 0);
+}
+
+function renderFavs() {
+  const cont = document.getElementById('favsContent');
+  if (!favs.length) {
+    cont.innerHTML = '<div class="empty-state">Nenhum look favorito ainda.<br>Monte um look e toque em ♥</div>';
+    return;
+  }
+
+  // Apply filter
+  let filtered = favs;
+  if (favFilterIds.size > 0) {
+    filtered = favs.filter(f => {
+      const ids = [f.top, f.overlay, f.bottom, f.shoes].filter(Boolean);
+      return [...favFilterIds].every(fid => ids.includes(fid));
+    });
+  }
+
+  if (!filtered.length) {
+    cont.innerHTML = '<div class="empty-state">Nenhum look encontrado com esse filtro.</div>';
+    return;
+  }
+
+  cont.innerHTML = filtered.map((f) => {
+    const i = favs.indexOf(f);
+    const t = pieces.find(p => p.id === f.top);
+    const o = f.overlay ? pieces.find(p => p.id === f.overlay) : null;
+    const b = pieces.find(p => p.id === f.bottom);
+    const s = pieces.find(p => p.id === f.shoes);
+    if (!t || !b || !s) return '';
+    // Order: top first (the main piece), then overlay, bottom, shoes
+    const allExpanded = [t, o, b, s].filter(Boolean);
+    // For stack visual: top piece always on top (last = highest z-index)
+    const stackOrder = [b, s, t].filter(Boolean);
+
+    if (expandedFav === i) {
+      return `<div class="fav-expanded-wrapper" onclick="closeFavExpanded()">
+        <div class="fav-expanded" onclick="event.stopPropagation()">
+          <button class="fav-close-btn" onclick="closeFavExpanded()">✕</button>
+          <div class="fav-pieces-row">
+            ${allExpanded.map(p => `<div class="fav-piece"><img src="${p.photo}"><div class="fp-name">${p.desc}</div></div>`).join('')}
+          </div>
+          <div class="fav-notes">
+            <textarea id="favNote${i}" placeholder="Observações (dia, acessórios...)">${f.notes || ''}</textarea>
+          </div>
+          <button class="fav-note-save" id="favSaveBtn${i}" onclick="saveNoteBtn(${i})">Salvar observação</button>
+          <button class="fav-remove" onclick="removeFav(${i})">✕ Remover dos favoritos</button>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="fav-stack" onclick="expandFav(${i})">
+      <div class="stack-visual">
+        ${stackOrder.slice(0, 3).map(p => `<img class="stack-img" src="${p.photo}">`).join('')}
+      </div>
+      <div class="stack-label">${allExpanded.map(p => p.desc).join(' + ')}</div>
+    </div>`;
+  }).join('');
+}
+
+function expandFav(i) { expandedFav = expandedFav === i ? null : i; renderFavs(); }
+
+function closeFavExpanded() { expandedFav = null; renderFavs(); }
+
+function saveNoteBtn(i) {
+  const textarea = document.getElementById('favNote' + i);
+  favs[i].notes = textarea.value;
+  localStorage.setItem('ml_favs', JSON.stringify(favs));
+  expandedFav = null;
+  renderFavs();
+}
+
+function clearFavFilters() {
+  favFilterIds.clear();
+  document.getElementById('favSearch').value = '';
+  updateFilterLabel();
+  renderFilterList();
+  renderFavs();
+}
+
+function removeFav(i) { favs.splice(i, 1); expandedFav = null; localStorage.setItem('ml_favs', JSON.stringify(favs)); renderFavs(); }
+
+// ── ADD MODAL ──
+function openModal() {
+  tempPhoto = null; tempCat = null;
+  document.getElementById('inputDesc').value = '';
+  document.getElementById('photoPreviewArea').style.display = 'none';
+  document.getElementById('photoOptions').style.display = 'flex';
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+  document.getElementById('overlayCheckRow').classList.remove('visible');
+  document.getElementById('overlayCheck').checked = false;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('btnSavePiece').disabled = true;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
+}
+
+function clearPhoto() {
+  tempPhoto = null;
+  document.getElementById('photoPreviewArea').style.display = 'none';
+  document.getElementById('photoActionsArea').classList.remove('show');
+  document.getElementById('photoOptions').style.display = 'flex';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('btnSavePiece').disabled = true;
+  document.getElementById('btnMorePhotos').style.display = 'none';
+}
+
+function selectMorePhotos() {
+  // Converter a foto atual em um item do tempPhotos
+  if (tempPhoto) {
+    tempPhotos = [{
+      photo: tempPhoto,
+      desc: document.getElementById('inputDesc').value.trim() || '',
+      cat: tempCat,
+      isOverlay: tempCat === 'top' ? document.getElementById('overlayCheck').checked : false
+    }];
+  }
+  
+  // Abrir input de arquivo para múltiplos (sem fechar modal)
+  const fileInput = document.getElementById('fileInput');
+  fileInput.setAttribute('multiple', 'multiple');
+  fileInput.removeAttribute('capture'); // Remove capture para permitir múltiplos
+  fileInput.click();
+}
+
+function handlePhoto(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  // Se já tem fotos em tempPhotos (veio de "Selecionar mais fotos"), adiciona as novas
+  if (tempPhotos.length > 0) {
+    let processed = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max = 400;
+          let w = img.width, h = img.height;
+          if (w > h) { h = h * max / w; w = max; } else { w = w * max / h; h = max; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          tempPhotos.push({
+            photo: canvas.toDataURL('image/jpeg', 0.7),
+            desc: '',
+            cat: null,
+            isOverlay: false
+          });
+          processed++;
+          if (processed === files.length) {
+            // Fechar modal e abrir carrossel
+            document.getElementById('modal').classList.remove('show');
+            openMultiPhotosScreen();
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    return;
+  }
+
+  // Se 1 foto (e não tá vindo de "Selecionar mais fotos"), usa modal normal
+  if (files.length === 1) {
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 400;
+        let w = img.width, h = img.height;
+        if (w > h) { h = h * max / w; w = max; } else { w = w * max / h; h = max; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        tempPhoto = canvas.toDataURL('image/jpeg', 0.7);
+        document.getElementById('photoPreview').src = tempPhoto;
+        document.getElementById('photoPreviewArea').style.display = 'block';
+        document.getElementById('photoActionsArea').classList.add('show');
+        document.getElementById('photoOptions').style.display = 'none';
+        document.getElementById('btnSavePiece').textContent = 'Adicionar peça';
+        document.getElementById('btnSavePiece').disabled = false;
+        document.getElementById('btnMorePhotos').style.display = 'block';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
+
+  // Se múltiplas fotos, abre carrossel fullscreen (e zera tempPhotos)
+  tempPhotos = [];
+  let processed = 0;
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 400;
+        let w = img.width, h = img.height;
+        if (w > h) { h = h * max / w; w = max; } else { w = w * max / h; h = max; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        tempPhotos.push({
+          photo: canvas.toDataURL('image/jpeg', 0.7),
+          desc: '',
+          cat: null,
+          isOverlay: false
+        });
+        processed++;
+        if (processed === files.length) {
+          openMultiPhotosScreen();
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function pickCat(btn) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+  btn.classList.add('selected');
+  tempCat = btn.dataset.cat;
+  const row = document.getElementById('overlayCheckRow');
+  if (tempCat === 'top') row.classList.add('visible');
+  else { row.classList.remove('visible'); document.getElementById('overlayCheck').checked = false; }
+}
+
+// ── MÚLTIPLAS FOTOS ──
+function openMultiPhotosScreen() {
+  multiPhotoIndex = 0;
+  renderMultiPhotosCarousel();
+  document.getElementById('modal').classList.remove('show');
+  document.getElementById('multiPhotosScreen').classList.add('show');
+  // Atualizar texto do botão para múltiplas fotos
+  const quantidadeFotos = tempPhotos.length;
+  document.querySelector('.multi-actions .btn-save').textContent = `Adicionar ${quantidadeFotos} ${quantidadeFotos === 1 ? 'peça' : 'peças'}`;
+  validateMultiPiecesForm();
+}
+
+function renderMultiPhotosCarousel() {
+  const container = document.getElementById('multiPhotosContainer');
+  container.innerHTML = tempPhotos.map((photo, idx) => `
+    <div class="multi-photo-card" data-idx="${idx}">
+      <div style="position: relative; margin-bottom: 16px; flex: 1; display: flex; flex-direction: column; min-height: 0;">
+        <img src="${photo.photo}" style="flex: 1; object-fit: cover;">
+        <button class="multi-delete-btn" onclick="deleteMultiPhoto(${idx})">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" class="multi-desc" data-idx="${idx}" placeholder="Ex: cropped branco" value="${photo.desc}" onchange="updateMultiPhotoData(${idx})">
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <div class="cat-pills">
+          <button class="cat-pill multi-cat" data-idx="${idx}" data-cat="top" onclick="pickMultiCat(this)">Parte de cima</button>
+          <button class="cat-pill multi-cat" data-idx="${idx}" data-cat="bottom" onclick="pickMultiCat(this)">Parte de baixo</button>
+          <button class="cat-pill multi-cat" data-idx="${idx}" data-cat="shoes" onclick="pickMultiCat(this)">Calçado</button>
+        </div>
+        <label class="overlay-check-row" data-idx="${idx}" ${photo.cat === 'top' ? 'style="display: flex !important;"' : ''}>
+          <input type="checkbox" class="multi-overlay" data-idx="${idx}" ${photo.isOverlay ? 'checked' : ''} onchange="updateMultiPhotoData(${idx})"> Peça de sobreposição
+        </label>
+      </div>
+    </div>
+  `).join('');
+
+  // Restaurar seleções
+  tempPhotos.forEach((photo, idx) => {
+    if (photo.cat) {
+      const btn = document.querySelector(`.multi-cat[data-idx="${idx}"][data-cat="${photo.cat}"]`);
+      if (btn) btn.classList.add('selected');
+    }
+  });
+
+  // Atualizar indicador
+  updateMultiIndicator();
+  // Scroll para a foto atual
+  scrollToMultiPhoto(multiPhotoIndex);
+}
+
+function updateMultiPhotoData(idx) {
+  const desc = document.querySelector(`.multi-desc[data-idx="${idx}"]`);
+  const overlay = document.querySelector(`.multi-overlay[data-idx="${idx}"]`);
+  if (desc) tempPhotos[idx].desc = desc.value.trim();
+  if (overlay) tempPhotos[idx].isOverlay = overlay.checked;
+  validateMultiPiecesForm();
+}
+
+function deleteMultiPhoto(idx) {
+  tempPhotos.splice(idx, 1);
+  if (tempPhotos.length === 0) {
+    backFromMultiPhotos();
+    return;
+  }
+  if (multiPhotoIndex >= tempPhotos.length) {
+    multiPhotoIndex = tempPhotos.length - 1;
+  }
+  renderMultiPhotosCarousel();
+}
+
+function showToast(message) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'slideUpToast 0.3s ease reverse';
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
+// ── REMOVE BACKGROUND ──
+async function removeBackgroundSingle() {
+  if (!tempPhoto) return;
+  
+  const btn = document.getElementById('removeBgBtn1');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  
+  try {
+    // Converter base64 para blob
+    const response = await fetch(tempPhoto);
+    const blob = await response.blob();
+    
+    // Usar remove.bg API (free tier)
+    const formData = new FormData();
+    formData.append('image_file', blob);
+    
+    const apiResponse = await fetch('https://api.remove.bg/v1.0/removebg', {
+      method: 'POST',
+      headers: {
+        'X-Api-Key': 'free'
+      },
+      body: formData
+    });
+    
+    if (!apiResponse.ok) {
+      showToast('Limite de remove.bg atingido. Tente mais tarde.');
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      return;
+    }
+    
+    const resultBlob = await apiResponse.blob();
+    const reader = new FileReader();
+    reader.onload = () => {
+      tempPhoto = reader.result;
+      document.getElementById('photoPreview').src = tempPhoto;
+      showToast('Fundo removido! ✓');
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    };
+    reader.readAsDataURL(resultBlob);
+  } catch (err) {
+    console.error('Erro ao remover fundo:', err);
+    showToast('Erro ao remover fundo. Tente novamente.');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+async function removeBackgroundMulti(idx) {
+  if (idx >= tempPhotos.length) return;
+  
+  const btn = document.getElementById(`removeBgBtnMulti${idx}`);
+  btn.classList.add('loading');
+  btn.disabled = true;
+  
+  try {
+    // Converter base64 para blob
+    const response = await fetch(tempPhotos[idx].photo);
+    const blob = await response.blob();
+    
+    // Usar remove.bg API (free tier)
+    const formData = new FormData();
+    formData.append('image_file', blob);
+    
+    const apiResponse = await fetch('https://api.remove.bg/v1.0/removebg', {
+      method: 'POST',
+      headers: {
+        'X-Api-Key': 'free'
+      },
+      body: formData
+    });
+    
+    if (!apiResponse.ok) {
+      showToast('Limite de remove.bg atingido. Tente mais tarde.');
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      return;
+    }
+    
+    const resultBlob = await apiResponse.blob();
+    const reader = new FileReader();
+    reader.onload = () => {
+      tempPhotos[idx].photo = reader.result;
+      
+      // Atualizar preview
+      const imgElement = document.querySelector(`.multi-photo-card[data-idx="${idx}"] img`);
+      if (imgElement) imgElement.src = tempPhotos[idx].photo;
+      
+      showToast('Fundo removido! ✓');
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    };
+    reader.readAsDataURL(resultBlob);
+  } catch (err) {
+    console.error('Erro ao remover fundo:', err);
+    showToast('Erro ao remover fundo. Tente novamente.');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+function updateMultiIndicator() {
+  document.getElementById('multiIndicator').textContent = `peça ${multiPhotoIndex + 1} de ${tempPhotos.length}`;
+  validateMultiPiecesForm();
+}
+
+function validateMultiPiecesForm() {
+  const btn = document.getElementById('btnSaveMultiple');
+  const isValid = tempPhotos.every(p => p.desc && p.cat);
+  btn.disabled = !isValid;
+}
+
+function scrollToMultiPhoto(idx) {
+  const container = document.getElementById('multiPhotosContainer');
+  const cardWidth = container.children[0]?.offsetWidth || 0;
+  container.style.transform = `translateX(calc(-${idx * 100}% - ${idx * 20}px))`;
+}
+
+function navMultiPhotos(dir) {
+  const newIdx = multiPhotoIndex + dir;
+  if (newIdx >= 0 && newIdx < tempPhotos.length) {
+    multiPhotoIndex = newIdx;
+    scrollToMultiPhoto(multiPhotoIndex);
+    updateMultiIndicator();
+  }
+}
+
+function pickMultiCat(btn) {
+  const idx = parseInt(btn.dataset.idx);
+  const cat = btn.dataset.cat;
+  
+  // Desselecionar outros botões da mesma foto
+  document.querySelectorAll(`.multi-cat[data-idx="${idx}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  
+  // Atualizar estado
+  tempPhotos[idx].cat = cat;
+  
+  // Mostrar/esconder overlay checkbox
+  const overlayRow = document.querySelector(`.overlay-check-row[data-idx="${idx}"]`);
+  
+  if (cat === 'top') {
+    overlayRow?.classList.add('visible');
+  } else {
+    overlayRow?.classList.remove('visible');
+    if (overlayRow) {
+      overlayRow.querySelector('.multi-overlay').checked = false;
+    }
+    tempPhotos[idx].isOverlay = false;
+  }
+  validateMultiPiecesForm();
+}
+
+function backFromMultiPhotos() {
+  tempPhotos = [];
+  multiPhotoIndex = 0;
+  document.getElementById('multiPhotosScreen').classList.remove('show');
+  document.getElementById('fileInput').value = '';
+  openModal(); // Volta pro modal normal
+}
+
+function saveMultiplePieces() {
+  // Coletar dados do formulário
+  document.querySelectorAll('.multi-desc').forEach(input => {
+    const idx = parseInt(input.dataset.idx);
+    if (idx < tempPhotos.length) tempPhotos[idx].desc = input.value.trim();
+  });
+
+  document.querySelectorAll('.multi-overlay').forEach(input => {
+    const idx = parseInt(input.dataset.idx);
+    if (idx < tempPhotos.length) tempPhotos[idx].isOverlay = input.checked;
+  });
+
+  // Validar
+  const isValid = tempPhotos.every(p => p.desc && p.cat);
+  if (!isValid) {
+    showToast('Preencha os campos de todas as peças');
+    return;
+  }
+
+  // Salvar no localStorage
+  tempPhotos.forEach(p => {
+    pieces.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      photo: p.photo,
+      desc: p.desc,
+      cat: p.cat,
+      isOverlay: p.isOverlay
+    });
+  });
+
+  localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+  
+  // Fechar e limpar
+  document.getElementById('multiPhotosScreen').classList.remove('show');
+  tempPhotos = [];
+  multiPhotoIndex = 0;
+  document.getElementById('fileInput').value = '';
+  
+  // Atualizar views
+  renderLook();
+  renderPieces();
+}
+
+function savePiece() {
+  const desc = document.getElementById('inputDesc').value.trim();
+  
+  // Validar e mostrar qual campo tá faltando
+  if (!tempPhoto) {
+    showToast('Selecione uma foto para continuar');
+    return;
+  }
+  if (!desc) {
+    showToast('Preencha a descrição da peça');
+    return;
+  }
+  if (!tempCat) {
+    showToast('Selecione uma categoria para continuar');
+    return;
+  }
+  
+  pieces.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    photo: tempPhoto, desc, cat: tempCat,
+    isOverlay: tempCat === 'top' ? document.getElementById('overlayCheck').checked : false
+  });
+  localStorage.setItem('ml_pieces', JSON.stringify(pieces));
+  document.getElementById('modal').classList.remove('show');
+  renderLook();
+  renderPieces();
+}
+
+// ── INIT ──
+renderLook();
+</script>
+
+<!-- CONFIRMATION MODAL -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h2>Tem certeza?</h2>
+    <p id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="confirm-delete" onclick="confirmDelete()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
